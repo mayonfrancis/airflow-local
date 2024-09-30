@@ -1,0 +1,1 @@
+minikube start --mount --mount-string="./dags:/dags"
