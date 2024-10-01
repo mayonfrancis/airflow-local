@@ -5,33 +5,31 @@ from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import Kubernete
 from airflow.utils.dates import days_ago
 from airflow.models.param import Param
 import shlex
+from utils.notifier import MMNotifier
 
 # Define a simple DAG
 default_args = {
     'owner': 'airflow',
     'start_date': days_ago(1),
+    # 'on_success_callback': MMNotifier(),
+    # 'on_failure_callback': MMNotifier(),
 }
 
 params = {
-    "yourName": Param(
+    # "testString": Param(
+    #     default=0,
+    #     description="Enter your name please",
+    #     type="string"
+    # ),
+    # "sampleObj": Param(
+    #     default=0,
+    #     description="Enter an obj",
+    #     type="object"
+    # ),
+    "MM_WEBHOOK_URL": Param(
         default=0,
-        description="Enter your name please",
+        description="MM_WEBHOOK_URL",
         type="string"
-    ),
-    "userIds": Param(
-        default=0,
-        description="Enter user ids to run for",
-        type="string"
-    ),
-    "obj": Param(
-        default=0,
-        description="Enter an obj",
-        type="object"
-    ),
-    "myArr": Param(
-        default=0,
-        description="Enter new line scids",
-        type="array"
     ),
 }
 
@@ -41,7 +39,12 @@ with DAG(
     schedule_interval=None,
     catchup=False,
     # render_template_as_native_obj=True,
-    params = params
+    params = params,
+    
+    on_failure_callback=MMNotifier(),
+    on_success_callback=MMNotifier(),
+
+    
 ) as dag:
 
     # Kubernetes Pod Operator Task
@@ -62,5 +65,7 @@ with DAG(
 
         image_pull_policy="IfNotPresent",
 
-        on_finish_action='keep_pod',
+        on_finish_action='delete_succeeded_pod',
+        
+        # on
     )
